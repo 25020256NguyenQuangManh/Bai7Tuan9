@@ -2,6 +2,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MathUtils {
+    int skibidi_toilet = 366769;
+
     private static final Logger log = LoggerFactory.getLogger(MathUtils.class);
 
     public static int max(int a, int b) {
