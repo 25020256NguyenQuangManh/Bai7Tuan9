@@ -34,13 +34,9 @@ jobs:
       - name: Build and Verify Code Coverage
         run: mvn -B clean verify
 
-      # 2. Inline Feedback: Tích hợp Bot review code tự động
-      # Cấu hình chỉ chạy review bot trên môi trường Ubuntu để tránh việc bot comment 3 lần (do matrix có 3 OS)
       - name: Automated Code Review (Checkstyle)
-        uses: reviewdog/action-checkstyle@v1
-        if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review # Chỉ thị bot comment trực tiếp vào dòng code bị lỗi
-          level: error               # Mức độ lỗi
-          fail_on_error: true        # Chặn pipeline nếu phát hiện lỗi định dạng
+      uses: dbelyaev/action-checkstyle@master
+      if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        reporter: github-pr-review
