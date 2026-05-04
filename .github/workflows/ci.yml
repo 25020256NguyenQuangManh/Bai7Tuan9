@@ -1,0 +1,46 @@
+name: Maven CI Pipeline
+
+# 1. Trigger: Đã được cấu hình sẵn để chạy khi có push hoặc pull_request vào main
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    # BỔ SUNG: Cấp quyền cho GitHub Actions Bot để nó có thể đăng comment vào PR
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build and Verify Code Coverage
+        run: mvn -B clean verify
+
+      # 2. Inline Feedback: Tích hợp Bot review code tự động
+      # Cấu hình chỉ chạy review bot trên môi trường Ubuntu để tránh việc bot comment 3 lần (do matrix có 3 OS)
+      - name: Automated Code Review (Checkstyle)
+        uses: reviewdog/action-checkstyle@v1
+        if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review # Chỉ thị bot comment trực tiếp vào dòng code bị lỗi
+          level: error               # Mức độ lỗi
+          fail_on_error: true        # Chặn pipeline nếu phát hiện lỗi định dạng
